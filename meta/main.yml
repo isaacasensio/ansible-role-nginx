@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  role_name: nginx
+  author: iasensio
+  description: Install nginx docker container as a Linux service
+  company: MyMac, LLC
+  license: MIT
+  min_ansible_version: 2.4
+
+  platforms:
+    - name: Debian
+      versions:
+        - bullseye
+
+  galaxy_tags:
+    - system
+    - docker
+    - bullseye
+    - dashboards

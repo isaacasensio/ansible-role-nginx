@@ -1,0 +1,63 @@
+---
+- name: Create nginx user
+  ansible.builtin.user:
+    name: "{{ nginx_container_user }}"
+    shell: /sbin/nologin
+    create_home: true
+    state: present
+  become: true  
+
+- name: Create nginx global directory
+  ansible.builtin.file:
+    path: "{{ nginx_host_config_path }}"
+    owner: "{{ nginx_container_user }}"
+    group: "{{ nginx_container_user }}"
+    state: directory
+    mode: 0755
+  become: true
+
+- name: Create a network
+  docker_network:
+    name: nginx_network
+
+- name: Copy nginx config
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ nginx_host_config_path }}/{{ item }}"
+    mode: 0644
+    owner: "{{ nginx_container_user }}"
+    group: "{{ nginx_container_user }}"
+  become: true
+  loop:
+    - "docker-compose.yml"
+    - "nginx.conf"
+
+- name: Create systemd nginx service.
+  ansible.builtin.template:
+    src: templates/nginx.service.j2
+    dest: "/etc/systemd/system/nginx.service"
+    mode: 0644
+  become: true
+
+- name: Ensure nginx.service is started
+  ansible.builtin.systemd:
+    state: restarted
+    enabled: true
+    name: nginx
+  become: true
+
+- name: Check nginx container
+  ansible.builtin.uri:
+    url: "http://localhost:{{ nginx_host_port }}"
+  register: result
+  until: result.status == 200
+  retries: 5
+  delay: 30
+
+- name: Remove old image versions
+  become: true
+  docker_prune:
+    images: true
+    images_filters:
+      dangling: false
+  notify: Restart Docker service

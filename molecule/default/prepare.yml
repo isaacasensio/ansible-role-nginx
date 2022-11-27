@@ -1,0 +1,17 @@
+---
+- name: Prepare
+  hosts: all
+  become: true
+  vars:
+    docker_compose_version: "v2.4.1"
+    pip_install_packages:
+      - requests
+      - docker
+  pre_tasks:
+    - name: Update apt cache.
+      apt: update_cache=true cache_valid_time=600
+      changed_when: false
+
+  roles:
+    - role: geerlingguy.pip
+    - role: geerlingguy.docker

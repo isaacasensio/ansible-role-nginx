@@ -1,0 +1,16 @@
+---
+nginx_image: "nginxinc/nginx-unprivileged:latest"
+nginx_host_port: 80
+nginx_host_config_path: /etc/nginx
+nginx_container_user: nginx
+nginx_conf: |
+  pid  /tmp/nginx.pid;
+  events {
+    worker_connections  1024;  ## Default: 1024
+  }
+  http {
+    server {
+      listen 8080;
+      return 200;
+    }
+  }
